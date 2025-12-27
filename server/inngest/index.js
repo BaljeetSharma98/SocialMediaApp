@@ -1,6 +1,6 @@
 import { Inngest } from "inngest";
 import User from "../models/User.js";
-
+import connectDB from "../configs/db.js";
 
 // Create a client to send and receive events
 export const inngest = new Inngest({ id: "pingup-app" });
@@ -10,22 +10,36 @@ const syncUserCreation = inngest.createFunction(
   { id: "sync-user-from-clerk" },
   { event: "clerk/user.created" },
   async ({ event }) => {
-    const { id, first_name, last_name, email_addresses, image_url } =
-      event.data;
-    let username = email_addresses[0].email_address.split("@")[0];
-    // Check availability of username
-    const user = await User.findOne({ username });
-    if (user) {
-      username = username + Math.floor(Math.random() * 10000);
+    try {
+      await connectDB();
+
+      const { id, first_name, last_name, email_addresses, image_url } =
+        event.data;
+
+      const existingUser = await User.findById(id);
+      if (existingUser) return;
+
+      let username = email_addresses[0].email_address.split("@")[0];
+      // Check availability of username
+      const user = await User.findOne({ username });
+      if (user) {
+        username = username + Math.floor(Math.random() * 10000);
+      }
+
+      const userData = {
+        _id: id,
+        email: email_addresses[0].email_address,
+        full_name: first_name + " " + last_name,
+        profile_picture: image_url,
+        username,
+      };
+
+      await User.create(userData);
+      console.log("✅ User created in MongoDB");
+    } catch (error) {
+      console.error("❌ User creation failed:", error.message);
+      throw error;
     }
-    const userData = {
-      id: id,
-      email: email_addresses[0].email_address,
-      full_name: first_name + " " + last_name,
-      profile_picture: image_url,
-      username,
-    };
-    await User.create(userData);
   }
 );
 
@@ -34,14 +48,24 @@ const syncUserUpdation = inngest.createFunction(
   { id: "update-user-from-clerk" },
   { event: "clerk/user.updated" },
   async ({ event }) => {
-    const { id, first_name, last_name, email_addresses, image_url } =
-      event.data;
-    const updatedUserData = {
-      email: email_addresses[0].email_address,
-      full_name: first_name + " " + last_name,
-      profile_picture: image_url,
-    };
-    await User.findByIdAndUpdate(id, updatedUserData);
+    try {
+      await connectDB();
+
+      const { id, first_name, last_name, email_addresses, image_url } =
+        event.data;
+
+      const updatedUserData = {
+        email: email_addresses[0].email_address,
+        full_name: first_name + " " + last_name,
+        profile_picture: image_url,
+      };
+
+      await User.findByIdAndUpdate(id, updatedUserData);
+      console.log("✅ User updated");
+    } catch (error) {
+      console.error("❌ User update failed:", error.message);
+      throw error;
+    }
   }
 );
 
@@ -49,10 +73,16 @@ const syncUserUpdation = inngest.createFunction(
 const syncUserDeletion = inngest.createFunction(
   { id: "delete-user-with-clerk" },
   { event: "clerk/user.deleted" },
-
   async ({ event }) => {
-    const { id } = event.data;
-    await User.findByIdAndDelete(id);
+    try {
+      await connectDB();
+      const { id } = event.data;
+      await User.findByIdAndDelete(id);
+      console.log("✅ User deleted");
+    } catch (error) {
+      console.error("❌ User deletion failed:", error.message);
+      throw error;
+    }
   }
 );
 
