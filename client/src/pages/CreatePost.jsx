@@ -1,16 +1,33 @@
 import React, { useState } from "react";
 import { Image, X } from "lucide-react";
-import { dummyUserData } from "../assets/assets";
+import { useApp } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const CreatePost = () => {
+  const { currentUser: user, createPost } = useApp();
+  const navigate = useNavigate();
   const [content, setContent] = useState("");
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const user = dummyUserData;
-
-  const handleSubmit = async () => {};
+  const handleSubmit = async () => {
+    if (!content.trim() && images.length === 0) {
+      throw new Error("Post content cannot be empty");
+    }
+    setLoading(true);
+    try {
+      await createPost(content, images);
+      setContent("");
+      setImages([]);
+      navigate("/");
+    } catch (err) {
+      console.error(err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">

@@ -1,23 +1,38 @@
 import React, { useState } from "react";
-import { dummyUserData } from "../assets/assets";
+import { useApp } from "../context/AppContext";
 import { Pencil } from "lucide-react";
 
 const ProfileModal = ({ setShowEdit }) => {
-  const user = dummyUserData;
+  const { currentUser: user, updateProfile } = useApp();
 
   const [editForm, setEditForm] = useState({
-    username: user.username,
-    bio: user.bio,
-    location: user.location,
+    username: user?.username || "",
+    bio: user?.bio || "",
+    location: user?.location || "",
     profile_picture: null,
     cover_photo: null,
-    full_name: user.full_name,
+    full_name: user?.full_name || "",
   });
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
-    // save logic here
-    setShowEdit(false);
+    try {
+      const formData = new FormData();
+      formData.append("full_name", editForm.full_name);
+      formData.append("username", editForm.username);
+      formData.append("bio", editForm.bio);
+      formData.append("location", editForm.location);
+      if (editForm.profile_picture) {
+        formData.append("profile", editForm.profile_picture);
+      }
+      if (editForm.cover_photo) {
+        formData.append("cover", editForm.cover_photo);
+      }
+      await updateProfile(formData);
+      setShowEdit(false);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (

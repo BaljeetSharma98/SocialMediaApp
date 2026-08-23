@@ -1,22 +1,29 @@
-import React, { useState } from 'react'
-import { dummyConnectionsData } from '../assets/assets'
+import React, { useEffect, useState } from 'react'
+import { useApp } from '../context/AppContext'
 import { Search } from 'lucide-react'
 import UserCard from '../components/UserCard'
 import Loading from '../components/Loading'
 
 const Discover = () => {
+  const { searchUsers } = useApp()
   const [input, setInput] = useState('')
-  const [users, setUsers] = useState(dummyConnectionsData)
-  const [loading, setLoading] = useState(false)
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  const fetchDiscoverUsers = async (query = '') => {
+    setLoading(true)
+    const result = await searchUsers(query)
+    setUsers(result)
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchDiscoverUsers()
+  }, [])
 
   const handleSearch = async (e) => {
     if (e.key === 'Enter') {
-      setUsers([])
-      setLoading(true)
-      setTimeout(() => {
-        setUsers(dummyConnectionsData)
-        setLoading(false)
-      }, 1000)
+      await fetchDiscoverUsers(input)
     }
   }
 

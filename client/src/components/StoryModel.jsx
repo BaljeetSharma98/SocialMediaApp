@@ -1,8 +1,10 @@
 import { ArrowLeft, Sparkle, TextIcon, Upload } from 'lucide-react'
 import React, { useState } from 'react'
 import toast from 'react-hot-toast'
+import { useApp } from '../context/AppContext'
 
 const StoryModel = ({setShowModal,fetchStories}) => {
+    const { createStory } = useApp()
     const bgColors=["#4f46e5","#7c3aed","#db2777","#e11d48","#ca8a04","#0d9488"]
     const [mode, setMode]=useState("text")
     const [background, setBackground]=useState(bgColors[0])
@@ -19,7 +21,31 @@ const StoryModel = ({setShowModal,fetchStories}) => {
     }
 
     const handleCreateStory=async()=>{
-
+        try {
+            const formData = new FormData()
+            if (mode === 'text') {
+                if (!text.trim()) {
+                    throw new Error("Story content cannot be empty")
+                }
+                formData.append("content", text)
+                formData.append("background_color", background)
+                formData.append("media_type", "text")
+            } else {
+                if (!media) {
+                    throw new Error("Please upload an image or video")
+                }
+                formData.append("media", media)
+                formData.append("media_type", media.type.startsWith('video') ? 'video' : 'image')
+            }
+            await createStory(formData)
+            setShowModal(false)
+            if (fetchStories) {
+                fetchStories()
+            }
+        } catch (error) {
+            console.error("Create story failed:", error)
+            throw error
+        }
     }
   return (
     <div className='fixed inset-0 z-110 min-h-screen bg-black/80 backdrop-blur text-white flex items-center justify-center p-4'>

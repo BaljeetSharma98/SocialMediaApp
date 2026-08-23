@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { dummyPostsData, dummyUserData } from "../assets/assets";
+import { useApp } from "../context/AppContext";
 import Loading from "../components/Loading";
 import UserProfileInfo from "../components/UserProfileInfo";
 import PostCard from "../components/PostCard";
@@ -9,19 +9,32 @@ import moment from "moment";
 
 const Profile = () => {
   const { profileId } = useParams();
+  const { currentUser, feedPosts, fetchFeed, fetchUserProfileById } = useApp();
   const [user, setUser] = useState(null);
-  const [posts, setPosts] = useState([]);
   const [activeTab, setActiveTab] = useState("posts");
   const [showEdit, setShowEdit] = useState(false);
 
   const fetchUser = async () => {
-    setUser(dummyUserData);
-    setPosts(dummyPostsData);
+    if (!profileId) {
+      setUser(currentUser);
+    } else {
+      try {
+        const otherUser = await fetchUserProfileById(profileId);
+        setUser(otherUser);
+      } catch (err) {
+        console.error(err);
+      }
+    }
   };
 
   useEffect(() => {
     fetchUser();
-  }, []);
+    fetchFeed();
+  }, [profileId, currentUser]);
+
+  const posts = feedPosts.filter(
+    (post) => post.user?._id === (profileId || currentUser?._id)
+  );
 
   return user ? (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">

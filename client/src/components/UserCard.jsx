@@ -1,16 +1,22 @@
 import React from 'react'
-import { dummyUserData } from '../assets/assets'
+import { useApp } from '../context/AppContext'
 import { MapPin, UserPlus, MessageCircle, Plus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const UserCard = ({ user }) => {
-  const currentUser = dummyUserData
+  const { currentUser, followUser, connectUser } = useApp()
+  const navigate = useNavigate()
 
   const handleFollow = async () => {
-    // follow logic here
+    await followUser(user._id)
   }
 
   const handleConnectionRequest = async () => {
-    // connection request logic here
+    if (currentUser?.connections.includes(user._id)) {
+      navigate(`/messages/${user._id}`)
+    } else {
+      await connectUser(user._id)
+    }
   }
 
   return (

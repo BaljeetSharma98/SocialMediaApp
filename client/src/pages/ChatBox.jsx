@@ -1,17 +1,49 @@
 import React, { useRef, useState, useEffect } from "react";
-import { dummyMessagesData, dummyUserData } from "../assets/assets";
+import { useParams } from "react-router-dom";
+import { useApp } from "../context/AppContext";
 import { ImageIcon, SendHorizonal } from "lucide-react";
 
 const ChatBox = () => {
-  const messages = dummyMessagesData;
+  const { userId: partnerId } = useParams();
+  const { fetchUserProfileById, fetchChatHistory, sendMessage: sendApiMessage, currentUser } = useApp();
+  const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
-  const [user, setUser] = useState(dummyUserData);
+  const [user, setUser] = useState(null);
   const messagesEndRef = useRef(null);
 
   const sendMessage = async () => {
-    // message send logic
+    if (!text.trim() && !image) return;
+    try {
+      const newMsg = await sendApiMessage(partnerId, text, image);
+      setMessages((prev) => [...prev, newMsg]);
+      setText("");
+      setImage(null);
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
+
+  const loadChat = async () => {
+    try {
+      const pProfile = await fetchUserProfileById(partnerId);
+      setUser(pProfile);
+      const history = await fetchChatHistory(partnerId);
+      setMessages(history);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    loadChat();
+    // Auto-poll messages log every 3.5 seconds
+    const interval = setInterval(async () => {
+      const history = await fetchChatHistory(partnerId);
+      setMessages(history);
+    }, 3500);
+    return () => clearInterval(interval);
+  }, [partnerId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });

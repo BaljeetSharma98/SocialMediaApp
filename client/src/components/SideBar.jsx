@@ -1,6 +1,7 @@
 import { CirclePlus, LogOut, SidebarOpen } from 'lucide-react'
 import React from 'react'
-import { assets, dummyUserData } from '../assets/assets'
+import { assets } from '../assets/assets'
+import { useApp } from '../context/AppContext'
 import { Link, useNavigate } from 'react-router-dom'
 import MenuItems from './MenuItems'
 import {UserButton,useClerk} from '@clerk/clerk-react'
@@ -8,7 +9,7 @@ import {UserButton,useClerk} from '@clerk/clerk-react'
 const SideBar = ({sidebarOpen,setSidebarOpen}) => {
     
     const navigate=useNavigate()
-    const user=dummyUserData
+    const { currentUser: user } = useApp()
     const {signOut}=useClerk()
   return (
     <div className={`w-60 xl:w-72 bg-white border-r border-gray-200 flex flex-col justify-between items-center max-sm:absolute top-0 bottom-0 z-20

@@ -26,20 +26,25 @@ export const updateUserData = async (req, res) => {
       }
     }
 
-    // Update user
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        username,
-        bio,
-        location,
-        full_name,
-      },
-      { new: true }
-    );
+    const updatedFields = {
+      username,
+      bio,
+      location,
+      full_name,
+    };
 
-    const profile=req.files.profile && req.files.profile[0];
-    const cover=req.files.cover && req.files.cover[0];
+    if (req.files) {
+      if (req.files.profile && req.files.profile[0]) {
+        const profileFile = req.files.profile[0];
+        updatedFields.profile_picture = `${req.protocol}://${req.get("host")}/uploads/${profileFile.filename}`;
+      }
+      if (req.files.cover && req.files.cover[0]) {
+        const coverFile = req.files.cover[0];
+        updatedFields.cover_photo = `${req.protocol}://${req.get("host")}/uploads/${coverFile.filename}`;
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updatedFields, { new: true });
 
     res.json({ success: true, user: updatedUser });
   } catch (error) {

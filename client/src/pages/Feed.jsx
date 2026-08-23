@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react'
-import { assets, dummyPostsData } from '../assets/assets'
+import { assets } from '../assets/assets'
+import { useApp } from '../context/AppContext'
 import Loading from '../components/Loading'
 import StoriesBar from '../components/StoriesBar'
 import PostCard from '../components/PostCard'
 import RecentMessages from '../components/RecentMessages'
 
 const Feed = () => {
-  const [feeds,setfeeds]=useState([])
+  const { feedPosts: feeds, fetchFeed } = useApp()
   const [loading,setLoading]=useState(true)
 
   const fetchFeeds=async()=>{
-    setfeeds(dummyPostsData)
+    await fetchFeed()
     setLoading(false) 
   }
 

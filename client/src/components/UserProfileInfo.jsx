@@ -1,27 +1,36 @@
-import { Calendar, MapPin, PenBox, Verified } from "lucide-react";
+import { Calendar, MapPin, PenBox, Verified, UserPlus, MessageCircle, Plus } from "lucide-react";
 import moment from "moment";
 import React from "react";
+import { useApp } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
 
 const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
+  const { currentUser, followUser, connectUser } = useApp();
+  const navigate = useNavigate();
+
+  const isOwnProfile = !profileId || profileId === currentUser?._id;
+  const isFollowing = currentUser?.following.includes(user?._id);
+  const isConnected = currentUser?.connections.includes(user?._id);
+
   return (
-    <div className="relative py-4 px-6 md : px-8 bg-white">
-      <div className="flex flex-col md: flex-row items-start gap-6">
+    <div className="relative py-4 px-6 md:px-8 bg-white">
+      <div className="flex flex-col md:flex-row items-start gap-6">
         <div
           className="w-32 h-32 border-4 border-white shadow-lg absolute -top-16
-          rounded-full"
+          rounded-full overflow-hidden bg-white"
         >
           <img
-            src={user.profile_picture}
+            src={user.profile_picture || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200"}
             alt=""
-            className="absolute rounded-full z-2"
+            className="w-full h-full object-cover"
           />
         </div>
 
-        <div className="w-full pt-16 md : pt-0 md : p1-36">
-          <div className="flex flex-col md: flex-row items-start justify-between">
+        <div className="w-full pt-16 md:pt-0 md:pl-36">
+          <div className="flex flex-col md:flex-row items-start justify-between">
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2x1 font-bold text-gray-900">
+                <h1 className="text-2xl font-bold text-gray-900">
                   {user.full_name}{" "}
                 </h1>
                 <Verified className="w-6 h-6 text-blue-500" />
@@ -30,18 +39,40 @@ const UserProfileInfo = ({ user, posts, profileId, setShowEdit }) => {
                 {user.username ? `@${user.username}` : "Add a username"}
               </p>
             </div>
-            {/* if user is not on others profile that means he is opening his
-profile so we will give edit button */}
-            {!profileId && (
+            {isOwnProfile ? (
               <button
                 onClick={() => setShowEdit(true)}
-                className="flex
-items-center gap-2 border border-gray-300 hover: bg-gray-50 px-4
-py-2 rounded-lg font-medium transition-colors mt-4 md: mt-0"
+                className="flex items-center gap-2 border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-lg font-medium transition-colors mt-4 md:mt-0 cursor-pointer"
               >
                 <PenBox className='w-4 h-4' />
                 Edit
               </button>
+            ) : (
+              <div className="flex gap-2 mt-4 md:mt-0">
+                <button
+                  onClick={() => followUser(user._id)}
+                  className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 active:scale-95 transition text-white cursor-pointer"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  {isFollowing ? "Following" : "Follow"}
+                </button>
+                <button
+                  onClick={() => {
+                    if (isConnected) {
+                      navigate(`/messages/${user._id}`);
+                    } else {
+                      connectUser(user._id);
+                    }
+                  }}
+                  className="px-4 py-2 flex items-center justify-center border text-slate-500 rounded-lg cursor-pointer active:scale-95 transition hover:bg-gray-100"
+                >
+                  {isConnected ? (
+                    <MessageCircle className="w-5 h-5 text-indigo-600" />
+                  ) : (
+                    <Plus className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             )}
           </div>
           <p className="text-gray-700 text-sm max-w-md mt-4">{user.bio} </p>

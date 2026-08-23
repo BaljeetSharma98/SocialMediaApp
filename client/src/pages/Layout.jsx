@@ -2,14 +2,14 @@ import React, { useState } from "react";
 import SideBar from "../components/SideBar";
 import { Outlet } from "react-router-dom";
 import { Flag, Menu, X } from "lucide-react";
-import { dummyUserData } from "../assets/assets";
+import { useApp } from "../context/AppContext";
 import Loading from "../components/Loading";
 
 const Layout = () => {
-  const user=dummyUserData;
+  const { currentUser: user, loadingProfile } = useApp();
   const [sidebarOpen,setSidebarOpen]=useState(false);
 
-  return user? (
+  return !loadingProfile && user ? (
     <div className="w-full flex h-screen">
       <SideBar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen}/>
       <div className="flex-1 bg-slate-50">

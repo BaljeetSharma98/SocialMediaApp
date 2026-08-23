@@ -7,16 +7,18 @@ import {
   MessageSquare,
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import {
-  dummyConnectionsData as connections,
-  dummyFollowersData as followers,
-  dummyFollowingData as following,
-  dummyPendingConnectionsData as pendingConnections,
-} from '../assets/assets'
+import { useApp } from '../context/AppContext'
+import { useEffect } from 'react'
 
 const Connections = () => {
+  const { connectionsData, fetchConnections, followUser, acceptConnection } = useApp()
+  const { followers, following, connections, pending: pendingConnections } = connectionsData
   const [currentTab, setCurrentTab] = useState('Followers')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    fetchConnections()
+  }, [])
 
   const dataArray = [
     { label: 'Followers', value: followers, icon: Users },
@@ -103,6 +105,7 @@ const Connections = () => {
                     {/* Following */}
                     {currentTab === 'Following' && (
                       <button
+                        onClick={() => followUser(user._id)}
                         className="w-full p-2 text-sm rounded bg-slate-100 hover:bg-slate-200 text-black active:scale-95 transition cursor-pointer"
                       >
                         Unfollow
@@ -112,6 +115,7 @@ const Connections = () => {
                     {/* Pending */}
                     {currentTab === 'Pending' && (
                       <button
+                        onClick={() => acceptConnection(user._id)}
                         className="w-full p-2 text-sm rounded bg-slate-100 hover:bg-slate-200 text-black active:scale-95 transition cursor-pointer"
                       >
                         Accept
