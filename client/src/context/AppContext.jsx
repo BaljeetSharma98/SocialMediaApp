@@ -38,7 +38,8 @@ export const AppProvider = ({ children }) => {
       headers["Content-Type"] = "application/json";
     }
 
-    const response = await fetch(`${backendUrl}${endpoint}`, {
+    const url = `${backendUrl}${endpoint}`.replace(/([^:]\/)\/+/g, "$1");
+    const response = await fetch(url, {
       ...options,
       headers,
     });
