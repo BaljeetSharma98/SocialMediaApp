@@ -21,6 +21,7 @@ export const AppProvider = ({ children }) => {
   });
   const [recentMessages, setRecentMessages] = useState([]);
   const [loadingProfile, setLoadingProfile] = useState(true);
+  const [profileError, setProfileError] = useState(null);
 
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
 
@@ -53,10 +54,12 @@ export const AppProvider = ({ children }) => {
     if (!userId) return;
     try {
       setLoadingProfile(true);
+      setProfileError(null);
       const data = await apiFetch("/api/users/profile");
       setCurrentUser(data.user);
     } catch (error) {
       console.error("Error fetching profile:", error);
+      setProfileError(error.message || "Failed to load user profile");
     } finally {
       setLoadingProfile(false);
     }
@@ -296,6 +299,8 @@ export const AppProvider = ({ children }) => {
         connectionsData,
         recentMessages,
         loadingProfile,
+        profileError,
+        backendUrl,
         fetchProfile,
         fetchUserProfileById,
         updateProfile,
