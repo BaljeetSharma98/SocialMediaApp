@@ -3,7 +3,8 @@ import User from "../models/User.js";
 // Update User Data
 export const updateUserData = async (req, res) => {
   try {
-    const { userId } = req.auth();
+    const auth = typeof req.auth === 'function' ? req.auth() : req.auth;
+    const userId = auth?.userId;
     let { username, bio, location, full_name } = req.body;
 
     // Find current user
